@@ -1,26 +1,34 @@
 /* Final interaction hotfix — stable section rhythm and image loading */
 .image-pending{opacity:0!important}
-.image-ready{opacity:1!important;transition:opacity .32s cubic-bezier(.22,1,.36,1)!important}
+.image-ready{opacity:1!important;transition:opacity .22s cubic-bezier(.22,1,.36,1)!important}
+.hero-slide img.image-ready{transition:none!important}
 
 @media (min-width:761px){
   /* Approved rhythm: heritage dark → rooms light → experiences dark → gastronomy light */
   .stay-scene{
     background:#f4f1ea!important;
     color:#13272b!important;
-    overflow:hidden!important;
+    overflow:visible!important;
     padding-top:clamp(100px,10vw,160px)!important;
-    padding-bottom:clamp(110px,10vw,160px)!important;
+    padding-bottom:clamp(72px,7vw,110px)!important;
   }
   .stay-scene .v3-scene-head{margin-bottom:clamp(68px,7vw,104px)!important}
   .stay-scene .v3-scene-head h2,
   .stay-scene .v3-scene-head .section-index{color:#13272b!important}
   .stay-scene .v3-scene-head>p:last-child{color:#66706d!important}
 
-  /* ScrollTrigger owns the pin. CSS must never make this sticky. */
-  .stay-scroll-shell{display:contents!important}
-  .stay-horizontal{
+  /* Native sticky shell. This shell must be a real box — never display:contents. */
+  .stay-scroll-shell{
     position:relative!important;
-    top:auto!important;
+    display:block!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    background:transparent!important;
+  }
+  .stay-horizontal{
+    position:sticky!important;
+    top:16svh!important;
     width:min(88vw,1260px)!important;
     height:min(68svh,690px)!important;
     min-height:520px!important;
@@ -32,6 +40,7 @@
     user-select:auto!important;
     cursor:default!important;
     opacity:1!important;
+    transform:none!important;
   }
   .stay-horizontal-track{
     display:flex!important;
