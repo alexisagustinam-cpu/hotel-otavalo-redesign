@@ -7,6 +7,10 @@ const safeLoad = (src, timeout = 3600) => Promise.race([loadScript(src),new Prom
 
 const decodeImage = img => new Promise(resolve => {
   if (!img) return resolve();
+  if (img.dataset.decodeBound === '1' && img.classList.contains('image-ready')) return resolve();
+  img.dataset.decodeBound = '1';
+  img.classList.add('image-pending');
+
   const finish = () => {
     const decoded = img.decode ? img.decode().catch(() => {}) : Promise.resolve();
     Promise.resolve(decoded).finally(() => {
@@ -15,36 +19,55 @@ const decodeImage = img => new Promise(resolve => {
       resolve();
     });
   };
+
   if (img.complete && img.naturalWidth > 0) return finish();
-  img.classList.add('image-pending');
   img.addEventListener('load', finish, {once:true});
-  img.addEventListener('error', () => { img.classList.remove('image-pending'); resolve(); }, {once:true});
+  img.addEventListener('error', () => {
+    img.classList.remove('image-pending');
+    resolve();
+  }, {once:true});
 });
 
-const warmHomepageImages = heroImage => {
-  const selector = [
-    '.hero-slide img',
-    '.heritage-frame img',
-    '.stay-card img',
-    '.experience-tile img',
-    '.taste-panel img',
-    '.events-compact-media img',
-    '.journey-card img'
-  ].join(',');
-  const images = [...document.querySelectorAll(selector)].filter(img => img !== heroImage);
-  images.forEach(img => {
-    img.loading = 'eager';
-    img.decoding = 'async';
+const prepareHomepageImages = heroImage => {
+  const heroSlides = [...document.querySelectorAll('.hero-slide img')].filter(img => img !== heroImage);
+  heroSlides.forEach(img => {
+    img.loading='eager';
+    img.decoding='async';
+    img.fetchPriority='high';
+    decodeImage(img);
+  });
+
+  /* Only the next two chapters compete for bandwidth immediately. */
+  const early = [...document.querySelectorAll('.heritage-frame img,.stay-card img')];
+  early.forEach((img,index) => {
+    img.loading='eager';
+    img.decoding='async';
+    img.fetchPriority=index < 3 ? 'high' : 'auto';
+    decodeImage(img);
+  });
+
+  /* Everything else starts loading shortly before it becomes visible. */
+  const later = [...document.querySelectorAll('.experience-tile img,.taste-panel img,.events-compact-media img,.journey-card img')];
+  later.forEach(img => {
+    img.loading='lazy';
+    img.decoding='async';
     img.classList.add('image-pending');
   });
 
-  /* Prioritize what appears next; the rest continues in the background. */
-  const priority = images.filter(img => img.closest('.hero-slide,.heritage-frame,.stay-card'));
-  const later = images.filter(img => !priority.includes(img));
-  Promise.allSettled(priority.map(decodeImage));
-  const startLater = () => Promise.allSettled(later.map(decodeImage));
-  if ('requestIdleCallback' in window) requestIdleCallback(startLater, {timeout:1200});
-  else setTimeout(startLater, 350);
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const img = entry.target;
+        img.loading='eager';
+        decodeImage(img);
+        observer.unobserve(img);
+      });
+    }, {rootMargin:'900px 0px'});
+    later.forEach(img => observer.observe(img));
+  } else {
+    setTimeout(() => later.forEach(decodeImage), 500);
+  }
 };
 
 (async()=>{
@@ -57,15 +80,15 @@ const warmHomepageImages = heroImage => {
 
     await loadScript('script.js');
 
-    /* Keep the intro covering the page until the first hero frame is fully decoded. */
-    const heroImage=document.querySelector('.hero-slide.is-active img');
+    /* Do not start the cinematic entrance until the first hero image is actually decoded. */
+    const heroImage=document.querySelector('.hero-slide.is-active img') || document.querySelector('.hero-slide img') || document.querySelector('.hero-media img');
     if(heroImage){
       heroImage.loading='eager';
       heroImage.decoding='async';
       heroImage.fetchPriority='high';
       await decodeImage(heroImage);
     }
-    warmHomepageImages(heroImage);
+    prepareHomepageImages(heroImage);
 
     await loadScript('v2.js');
     await safeLoad('https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js');
