@@ -19,9 +19,10 @@ const loadScript = src => new Promise((resolve, reject) => {
   document.body.appendChild(script);
 });
 
-const safeLoad = src => loadScript(src).catch(error => {
-  console.warn(`No se pudo cargar ${src}`, error);
-});
+const safeLoad = (src, timeout = 3600) => Promise.race([
+  loadScript(src),
+  new Promise((_, reject) => window.setTimeout(() => reject(new Error(`Timeout cargando ${src}`)), timeout))
+]).catch(error => console.warn(`No se pudo cargar ${src}`, error));
 
 (async () => {
   try {
