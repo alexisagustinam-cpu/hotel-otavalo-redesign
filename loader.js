@@ -30,6 +30,7 @@ const loadScript = src => new Promise((resolve, reject) => {
 
     await loadScript('script.js');
     await loadScript('v2.js');
+    await loadScript('scroll-story.js');
   } catch (error) {
     console.error(error);
     app.innerHTML = '<main style="padding:40px;font-family:sans-serif">No se pudo cargar la demo.</main>';
