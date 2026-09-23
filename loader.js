@@ -19,6 +19,10 @@ const loadScript = src => new Promise((resolve, reject) => {
   document.body.appendChild(script);
 });
 
+const safeLoad = src => loadScript(src).catch(error => {
+  console.warn(`No se pudo cargar ${src}`, error);
+});
+
 (async () => {
   try {
     const lowerPromise = Promise.all(lowerParts.map(fetchText));
@@ -30,7 +34,15 @@ const loadScript = src => new Promise((resolve, reject) => {
 
     await loadScript('script.js');
     await loadScript('v2.js');
-    await loadScript('scroll-story.js');
+
+    await safeLoad('https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js');
+    await Promise.all([
+      safeLoad('https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js'),
+      safeLoad('https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js'),
+      safeLoad('https://unpkg.com/lenis@1.3.21/dist/lenis.min.js')
+    ]);
+
+    await loadScript('v3.js');
   } catch (error) {
     console.error(error);
     app.innerHTML = '<main style="padding:40px;font-family:sans-serif">No se pudo cargar la demo.</main>';
