@@ -17,7 +17,7 @@
   .stay-scene .v3-scene-head .section-index{color:#13272b!important}
   .stay-scene .v3-scene-head>p:last-child{color:#66706d!important}
 
-  /* Native sticky shell. This shell must be a real box — never display:contents. */
+  /* One native-sticky room stage. It grows to almost edge-to-edge as the horizontal story starts. */
   .stay-scroll-shell{
     position:relative!important;
     display:block!important;
@@ -27,11 +27,12 @@
     background:transparent!important;
   }
   .stay-horizontal{
+    --stay-scale:.94;
     position:sticky!important;
-    top:16svh!important;
+    top:18svh!important;
     width:min(88vw,1260px)!important;
-    height:min(68svh,690px)!important;
-    min-height:520px!important;
+    height:min(64svh,650px)!important;
+    min-height:500px!important;
     margin:0 auto!important;
     overflow:hidden!important;
     background:#071719!important;
@@ -40,7 +41,9 @@
     user-select:auto!important;
     cursor:default!important;
     opacity:1!important;
-    transform:none!important;
+    transform:scale(var(--stay-scale))!important;
+    transform-origin:center center!important;
+    will-change:transform!important;
   }
   .stay-horizontal-track{
     display:flex!important;
@@ -54,14 +57,13 @@
   .stay-card{
     position:relative!important;
     flex:none!important;
-    width:min(82vw,1120px)!important;
     height:100%!important;
     min-height:0!important;
     overflow:hidden!important;
     background:#071719!important;
   }
-  .stay-card figure{position:absolute!important;inset:0!important;margin:0!important}
-  .stay-card img{width:100%!important;height:100%!important;object-fit:cover!important}
+  .stay-card figure{position:absolute!important;inset:0!important;margin:0!important;overflow:hidden!important}
+  .stay-card img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;transform:scale(1.025)!important}
   .stay-drag-hint{display:none!important}
   .room-dragging,.room-dragging *{cursor:auto!important}
 
