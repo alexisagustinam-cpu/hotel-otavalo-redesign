@@ -1,13 +1,22 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/habitaciones", "destination": "/detail.html?page=habitaciones" },
+    { "source": "/habitaciones/luxury", "destination": "/detail.html?page=luxury" },
+    { "source": "/habitaciones/deluxe", "destination": "/detail.html?page=deluxe" },
+    { "source": "/habitaciones/superior", "destination": "/detail.html?page=superior" },
+    { "source": "/restaurante", "destination": "/detail.html?page=restaurante" },
+    { "source": "/rooftop", "destination": "/detail.html?page=rooftop" },
+    { "source": "/experiencias", "destination": "/detail.html?page=experiencias" },
+    { "source": "/experiencias/equator-face", "destination": "/detail.html?page=equator-face" },
+    { "source": "/experiencias/kawsaymi", "destination": "/detail.html?page=kawsaymi" },
+    { "source": "/experiencias/taita-gundo", "destination": "/detail.html?page=taita-gundo" }
+  ],
   "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
-    }
+    { "source": "/(.*)", "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+    ]}
   ]
 }
