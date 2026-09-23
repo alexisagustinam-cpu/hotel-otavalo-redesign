@@ -26,6 +26,19 @@
   object-fit:cover!important;
   object-position:center!important;
 }
+.hero-morph-canvas{
+  position:absolute;
+  inset:0;
+  z-index:4;
+  display:block;
+  width:100%;
+  height:100%;
+  opacity:0;
+  transition:opacity .3s ease;
+  pointer-events:none;
+}
+.hero-morph-canvas.is-ready{opacity:1}
+.hero-sequence i::after{animation-duration:6s!important}
 
 @media (min-width:761px){
   /* Approved rhythm: heritage dark → rooms light → experiences dark → gastronomy light */
