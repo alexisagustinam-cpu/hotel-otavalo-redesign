@@ -1,0 +1,129 @@
+/* V3.2 — exact visual corrections after live review */
+
+/* 360 must be visible, not hidden in a corner */
+.hero-360{
+  position:absolute!important;
+  z-index:9!important;
+  right:clamp(28px,5vw,78px)!important;
+  top:58%!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+  width:clamp(136px,11vw,164px)!important;
+  aspect-ratio:1;
+  border:1px solid rgba(255,255,255,.78)!important;
+  border-radius:50%;
+  background:rgba(7,18,20,.28)!important;
+  color:#fff;
+  backdrop-filter:blur(8px);
+  box-shadow:0 18px 46px rgba(0,0,0,.2);
+}
+.hero-360::before{content:"";position:absolute;inset:8px;border:1px solid rgba(255,255,255,.24);border-radius:50%}
+.hero-360 strong{font-size:clamp(38px,3.5vw,52px)!important}
+.hero-360 span{font-size:9px!important;max-width:94px!important}
+.hero-360 i{font-size:12px!important}
+
+/* Heritage: the image must sit in the middle of the viewport with visible green air above/below */
+.heritage-story{--heritage-air:clamp(148px,18svh,188px);background:#102326!important}
+.heritage-story .heritage-head{top:var(--heritage-air)!important}
+.heritage-visual{
+  top:var(--heritage-air)!important;
+  height:calc(100svh - var(--heritage-air) - var(--heritage-air))!important;
+  min-height:380px!important;
+  max-height:590px!important;
+  align-self:start!important;
+  margin:0!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.09)!important;
+}
+.heritage-story .timeline{padding-top:9svh;padding-bottom:9svh}
+.heritage-story .timeline-item{
+  grid-template-columns:minmax(138px,158px) minmax(0,1fr)!important;
+  column-gap:clamp(44px,5vw,78px)!important;
+  min-height:36svh!important;
+  padding:42px 0!important;
+}
+.heritage-story .timeline-item .year{font-size:clamp(52px,5.4vw,86px)!important;white-space:nowrap!important}
+.heritage-story .timeline-item>div{padding-left:0!important}
+
+/* Rooms: horizontal on normal laptop widths too, not only >1080px */
+@media (min-width:761px){
+  .stay-scene{overflow:hidden!important}
+  .stay-horizontal{overflow:hidden!important;width:100%!important;position:relative!important}
+  .stay-horizontal-track{
+    display:flex!important;
+    grid-template-columns:none!important;
+    align-items:stretch!important;
+    gap:clamp(24px,3.2vw,48px)!important;
+    width:max-content!important;
+    padding:0 clamp(28px,6.5vw,96px) 26px!important;
+  }
+  .stay-card{
+    flex:none!important;
+    width:min(78vw,1040px)!important;
+    height:min(66svh,660px)!important;
+    min-height:500px!important;
+  }
+  .stay-horizontal-progress{display:grid!important}
+}
+
+/* Experiences: one bounded editorial field, not another scrolling list */
+@media (min-width:761px){
+  .experience-scene{overflow:hidden!important;padding-bottom:clamp(95px,9vw,145px)!important}
+  .experience-collage{
+    position:relative!important;
+    display:block!important;
+    max-width:var(--max)!important;
+    height:clamp(760px,104svh,980px)!important;
+    margin:28px auto 0!important;
+  }
+  .experience-center-mark{
+    position:absolute;z-index:1;left:50%;top:42%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;color:rgba(255,255,255,.16)
+  }
+  .experience-center-mark span{display:block;font-family:var(--serif);font-size:clamp(84px,12vw,178px);line-height:.8;letter-spacing:-.07em}
+  .experience-center-mark small{display:block;margin-top:14px;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.36)}
+  .experience-tile{position:absolute!important;min-height:0!important;z-index:2}
+  .experience-tile-1{left:0!important;top:2%!important;width:39%!important;height:42%!important}
+  .experience-tile-2{right:1%!important;top:0!important;width:27%!important;height:31%!important}
+  .experience-tile-3{left:31%!important;top:47%!important;width:30%!important;height:38%!important}
+  .experience-tile-4{right:0!important;bottom:2%!important;width:34%!important;height:39%!important}
+  .experience-tile-5{left:3%!important;bottom:0!important;width:22%!important;height:31%!important}
+  .experience-all{margin-top:24px!important}
+}
+
+/* No beige mist/degraded bridge between Experiences and Gastronomy */
+.v3-mist{display:none!important}
+.experience-scene::after,.taste-scene::before{display:none!important;content:none!important}
+.taste-scene{border-top:1px solid rgba(19,39,43,.12)!important;background:#f1eee7!important}
+
+/* Gastronomy selector: obvious two-state navigation */
+.taste-switch{gap:28px!important}
+.taste-switch button{font-size:10px!important;letter-spacing:.11em!important;opacity:.5!important}
+.taste-switch button.is-active{opacity:1!important}
+
+/* Collection: three properties must read as three distinct pieces */
+.journey-grid{gap:40px!important}
+.journey-card{border:1px solid rgba(255,255,255,.16)!important}
+.journey-card+.journey-card::before{
+  content:""!important;display:block!important;position:absolute!important;z-index:6!important;left:-21px!important;top:7%!important;bottom:7%!important;width:1px!important;background:rgba(255,255,255,.26)!important
+}
+
+@media (max-width:1080px) and (min-width:761px){
+  .heritage-story{--heritage-air:clamp(138px,17svh,168px)}
+  .heritage-visual{height:calc(100svh - var(--heritage-air) - var(--heritage-air))!important;min-height:370px!important}
+  .heritage-story .timeline-item{grid-template-columns:130px 1fr!important;column-gap:42px!important}
+  .stay-card{width:82vw!important}
+  .experience-collage{height:900px!important}
+  .journey-grid{gap:28px!important}
+  .journey-card+.journey-card::before{left:-15px!important}
+}
+
+@media (max-width:760px){
+  .hero-360{top:auto!important;bottom:124px!important;right:18px!important;transform:none!important;width:112px!important}
+  .heritage-story{--heritage-air:0px}
+  .heritage-story .heritage-head{top:auto!important}
+  .heritage-visual{position:relative!important;top:auto!important;height:58vh!important;min-height:430px!important;max-height:none!important}
+  .heritage-story .timeline{padding:0!important}
+  .heritage-story .timeline-item{grid-template-columns:86px 1fr!important;column-gap:20px!important;min-height:auto!important}
+  .experience-center-mark{display:none}
+  .journey-grid{gap:18px!important}
+  .journey-card+.journey-card::before{display:none!important}
+}
