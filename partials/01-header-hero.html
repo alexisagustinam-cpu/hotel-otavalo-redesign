@@ -1,5 +1,34 @@
   <a class="skip-link" href="#main">Ir al contenido</a>
 
+  <div class="collection-bar" id="collectionBar">
+    <a class="collection-mark" href="https://arthotelsecuador.com/" target="_blank" rel="noreferrer" aria-label="Art Hotels Ecuador">
+      <span>ART HOTELS</span><small>ECUADOR</small>
+    </a>
+    <button class="collection-toggle" id="collectionToggle" type="button" aria-expanded="false" aria-controls="collectionPanel">
+      <span data-v2-es="Explorar la colección" data-v2-en="Explore the collection">Explorar la colección</span>
+      <span class="collection-toggle-icon" aria-hidden="true">＋</span>
+    </button>
+    <div class="collection-quick" aria-label="Propiedades Art Hotels Ecuador">
+      <a href="https://hotelmamacuchara.com/" target="_blank" rel="noreferrer">Quito</a>
+      <span aria-current="page">Otavalo</span>
+      <a href="https://hotelcruzdelvado.com/" target="_blank" rel="noreferrer">Cuenca</a>
+      <a href="https://hotelrioguayas.com/" target="_blank" rel="noreferrer">Guayaquil</a>
+    </div>
+  </div>
+
+  <div class="collection-panel" id="collectionPanel" aria-hidden="true">
+    <div class="collection-panel-intro">
+      <span>Art Hotels Ecuador</span>
+      <p data-v2-es="Cuatro ciudades. Una forma de vivir Ecuador desde dentro." data-v2-en="Four cities. One way to experience Ecuador from within.">Cuatro ciudades. Una forma de vivir Ecuador desde dentro.</p>
+    </div>
+    <nav class="collection-properties" aria-label="Colección Art Hotels Ecuador">
+      <a href="https://hotelmamacuchara.com/" target="_blank" rel="noreferrer"><small>Quito</small><strong>Mama Cuchara</strong><span>↗</span></a>
+      <a class="is-current" href="/" aria-current="page"><small>Otavalo</small><strong>Hotel Otavalo</strong><span>01</span></a>
+      <a href="https://hotelcruzdelvado.com/" target="_blank" rel="noreferrer"><small>Cuenca</small><strong>Cruz del Vado</strong><span>↗</span></a>
+      <a href="https://hotelrioguayas.com/" target="_blank" rel="noreferrer"><small>Guayaquil</small><strong>Río Guayas</strong><span>↗</span></a>
+    </nav>
+  </div>
+
   <header class="site-header" id="siteHeader">
     <a class="brand" href="/" aria-label="Hotel Otavalo, inicio">
       <span class="brand-main">Hotel Otavalo</span>
@@ -15,28 +44,27 @@
     <div class="header-actions">
       <button class="lang" type="button" aria-label="Cambiar idioma">ES <span>/</span> EN</button>
       <a class="header-book" href="https://secuream.e-gds.com/mamacucharabyarthotels/shoppingcart/availability.aspx?hotelid=461" target="_blank" rel="noreferrer">Reservar</a>
-      <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Abrir menú">
-        <span></span><span></span>
-      </button>
+      <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Abrir menú"><span></span><span></span></button>
     </div>
   </header>
 
   <nav class="mobile-nav" id="mobileNav" aria-label="Navegación móvil">
-    <a href="/">Hotel</a>
-    <a href="/habitaciones">Habitaciones</a>
-    <a href="/experiencias">Experiencias</a>
-    <a href="/gastronomia">Gastronomía</a>
-    <a href="/otavalo">Otavalo</a>
+    <a href="/">Hotel</a><a href="/habitaciones">Habitaciones</a><a href="/experiencias">Experiencias</a><a href="/gastronomia">Gastronomía</a><a href="/otavalo">Otavalo</a>
     <a href="https://secuream.e-gds.com/mamacucharabyarthotels/shoppingcart/availability.aspx?hotelid=461" target="_blank" rel="noreferrer">Consultar disponibilidad</a>
   </nav>
 
   <main id="main">
-    <section class="hero" id="top" aria-labelledby="hero-title">
-      <div class="hero-media" aria-hidden="true">
-        <img src="https://hotelotavalo.com/wp-content/uploads/2026/05/slider-1.jpg" alt="" fetchpriority="high" />
+    <section class="hero hero-v2" id="top" aria-labelledby="hero-title">
+      <div class="hero-media hero-cinema" aria-hidden="true">
+        <figure class="hero-slide is-active"><img src="https://hotelotavalo.com/wp-content/uploads/2026/05/slider-1.jpg" alt="" fetchpriority="high" /></figure>
+        <figure class="hero-slide"><img src="https://hotelotavalo.com/wp-content/uploads/revslider/o/9/1679ec66b0d273e25c0eca01c4bf8432.webp" alt="" /></figure>
+        <figure class="hero-slide"><img src="https://hotelotavalo.com/wp-content/uploads/2026/05/equator-face-5.jpg" alt="" /></figure>
+        <figure class="hero-slide"><img src="https://hotelotavalo.com/wp-content/uploads/2026/05/sarance-8.jpg" alt="" /></figure>
+        <figure class="hero-slide"><img src="https://hotelotavalo.com/wp-content/uploads/2026/05/nukanchikwan-7.jpg" alt="" /></figure>
       </div>
       <div class="hero-shade" aria-hidden="true"></div>
       <div class="hero-content">
+        <div class="hero-trust"><a href="https://guide.michelin.com/mo/en/hotels-stays/otavalo/hotel-otavalo-14142" target="_blank" rel="noreferrer">One MICHELIN Key · 2025 <span>↗</span></a></div>
         <p class="hero-kicker">Otavalo · Imbabura · Ecuador</p>
         <h1 id="hero-title">Duerme dentro<br>de la historia<br>de Otavalo.</h1>
         <p class="hero-copy">Una casa histórica de 1930 transformada en hotel boutique, donde arquitectura, arte ecuatoriano y cultura andina forman parte de la estancia.</p>
@@ -45,6 +73,7 @@
           <a class="text-link text-link-light" href="#hotel">Descubrir la casa</a>
         </div>
       </div>
+      <div class="hero-sequence" aria-hidden="true"><span id="heroSequenceCurrent">01</span><i></i><span>05</span></div>
       <div class="hero-foot">
         <div><span>1930</span><small>Origen de la casa</small></div>
         <div><span>2018</span><small>Renace como hotel boutique</small></div>
@@ -55,23 +84,9 @@
 
     <section class="booking-strip" aria-label="Reserva directa">
       <div class="booking-inner">
-        <div class="booking-field">
-          <label for="checkin">Llegada</label>
-          <input id="checkin" type="date" />
-        </div>
-        <div class="booking-field">
-          <label for="checkout">Salida</label>
-          <input id="checkout" type="date" />
-        </div>
-        <div class="booking-field">
-          <label for="guests">Huéspedes</label>
-          <select id="guests">
-            <option>2 adultos</option>
-            <option>1 adulto</option>
-            <option>3 adultos</option>
-            <option>4 adultos</option>
-          </select>
-        </div>
+        <div class="booking-field"><label for="checkin">Llegada</label><input id="checkin" type="date" /></div>
+        <div class="booking-field"><label for="checkout">Salida</label><input id="checkout" type="date" /></div>
+        <div class="booking-field"><label for="guests">Huéspedes</label><select id="guests"><option>2 adultos</option><option>1 adulto</option><option>3 adultos</option><option>4 adultos</option></select></div>
         <a class="booking-submit" href="https://secuream.e-gds.com/mamacucharabyarthotels/shoppingcart/availability.aspx?hotelid=461" target="_blank" rel="noreferrer">Ver disponibilidad <span>↗</span></a>
       </div>
     </section>
@@ -79,12 +94,7 @@
     <section class="statement section-space" id="hotel">
       <div class="statement-grid">
         <p class="section-index reveal">Una casa para descubrir una ciudad.</p>
-        <div class="statement-copy reveal">
-          <h2>Otavalo no termina en la Plaza de Ponchos.<br><span>Ahí comienza.</span></h2>
-          <p>Quédate para conocer los oficios, sabores, música y paisajes que convierten a esta ciudad en uno de los territorios culturales más singulares de los Andes ecuatorianos.</p>
-        </div>
+        <div class="statement-copy reveal"><h2>Otavalo no termina en la Plaza de Ponchos.<br><span>Ahí comienza.</span></h2><p>Quédate para conocer los oficios, sabores, música y paisajes que convierten a esta ciudad en uno de los territorios culturales más singulares de los Andes ecuatorianos.</p></div>
       </div>
-      <figure class="statement-image reveal-media">
-        <img src="https://hotelotavalo.com/wp-content/uploads/revslider/o/9/28176bc0cab1af1b6a991782d8427b02.webp" alt="Detalle interior del Hotel Otavalo" loading="lazy" />
-      </figure>
+      <figure class="statement-image reveal-media"><img src="https://hotelotavalo.com/wp-content/uploads/revslider/o/9/28176bc0cab1af1b6a991782d8427b02.webp" alt="Detalle interior del Hotel Otavalo" loading="lazy" /></figure>
     </section>
