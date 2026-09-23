@@ -1,23 +1,27 @@
-/* Desktop dropdown stability: keep a continuous hover corridor between label and menu. */
+/* Desktop dropdown stability: each menu owns a straight vertical hover corridor.
+   The corridor is exactly the width of its parent label, so neighbouring nav groups
+   cannot steal hover while the pointer travels down into the open dropdown. */
 @media (min-width:761px){
   .desktop-nav .nav-group{
     position:relative;
     overflow:visible;
+    isolation:isolate;
   }
 
   .desktop-nav .nav-group::after{
     content:"";
     position:absolute;
-    left:50%;
+    left:0;
     top:100%;
-    width:max(100%,280px);
-    height:26px;
-    transform:translateX(-50%);
+    width:100%;
+    height:14px;
     pointer-events:auto;
+    z-index:61;
   }
 
   .desktop-nav .nav-dropdown{
-    top:calc(100% + 10px)!important;
+    top:calc(100% + 8px)!important;
+    z-index:62!important;
   }
 
   .desktop-nav .nav-group:hover .nav-dropdown,
