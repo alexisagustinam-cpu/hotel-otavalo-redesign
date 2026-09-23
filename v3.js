@@ -53,6 +53,8 @@
   }));
 
   if (!gsap || !ScrollTrigger || reduceMotion) {
+    document.getElementById('v3Intro')?.remove();
+    document.querySelectorAll('.v3-reveal-media').forEach(el => el.style.clipPath = 'none');
     observerScene('[data-heritage-step]','[data-heritage-frame]','#heritageProgress');
     observerScene('[data-stay-step]','[data-stay-frame]','#stayCurrent');
     observerScene('[data-experience-step]','[data-experience-frame]','#experienceCurrent');
@@ -94,7 +96,8 @@
       .to(introProgress,{scaleX:1,duration:.8,ease:'power2.inOut'},'<.05')
       .to(introArch,{scale:1.045,duration:.75,ease:'power2.inOut'},'<.15')
       .to(intro,{yPercent:-100,duration:.9,ease:'power4.inOut'})
-      .set(intro,{display:'none',className:'+=is-gone'});
+      .set(intro,{display:'none'})
+      .add(() => intro.classList.add('is-gone'));
   }
   if (heroMedia) entrance.fromTo(heroMedia,{clipPath:'inset(12% 10% 12% 10%)',scale:1.08},{clipPath:'inset(0% 0% 0% 0%)',scale:1.025,duration:1.05,ease:'power4.out'}, intro ? '-=.52' : 0);
   if (heroKicker) entrance.from(heroKicker,{y:16,opacity:0,duration:.5},'-=.68');
@@ -104,12 +107,8 @@
   if (heroFoot) entrance.from(heroFoot.children,{y:14,opacity:0,duration:.5,stagger:.06},'-=.3');
   if (award) entrance.fromTo(award,{scale:.62,rotate:-9,opacity:0},{scale:1,rotate:0,opacity:1,duration:.78,ease:'back.out(1.45)'},'-=.44');
 
-  if (hero && award) {
-    gsap.to(award,{y:-54,scale:.72,rotate:6,opacity:0,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'42% top',scrub:true}});
-  }
-  if (hero && heroMedia) {
-    gsap.to(heroMedia,{yPercent:7,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'bottom top',scrub:true}});
-  }
+  if (hero && award) gsap.to(award,{y:-54,scale:.72,rotate:6,opacity:0,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'42% top',scrub:true}});
+  if (hero && heroMedia) gsap.to(heroMedia,{yPercent:7,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'bottom top',scrub:true}});
 
   const animateScene = ({stepsSelector,framesSelector,currentSelector}) => {
     const steps = [...document.querySelectorAll(stepsSelector)];
@@ -126,19 +125,14 @@
       if (current) current.textContent = String(index+1).padStart(2,'0');
     };
     activate(0);
-    steps.forEach((step,index) => ScrollTrigger.create({
-      trigger:step,start:'top 58%',end:'bottom 42%',
-      onEnter:()=>activate(index),onEnterBack:()=>activate(index)
-    }));
+    steps.forEach((step,index) => ScrollTrigger.create({trigger:step,start:'top 58%',end:'bottom 42%',onEnter:()=>activate(index),onEnterBack:()=>activate(index)}));
   };
 
   animateScene({stepsSelector:'[data-heritage-step]',framesSelector:'[data-heritage-frame]',currentSelector:'#heritageProgress'});
   animateScene({stepsSelector:'[data-stay-step]',framesSelector:'[data-stay-frame]',currentSelector:'#stayCurrent'});
   animateScene({stepsSelector:'[data-experience-step]',framesSelector:'[data-experience-frame]',currentSelector:'#experienceCurrent'});
 
-  document.querySelectorAll('[data-heritage-step] .year').forEach(year => {
-    gsap.from(year,{xPercent:-22,opacity:.12,ease:'none',scrollTrigger:{trigger:year,start:'top 85%',end:'center 52%',scrub:true}});
-  });
+  document.querySelectorAll('[data-heritage-step] .year').forEach(year => gsap.from(year,{xPercent:-22,opacity:.12,ease:'none',scrollTrigger:{trigger:year,start:'top 85%',end:'center 52%',scrub:true}}));
 
   const thread = document.querySelector('.experience-thread');
   if (thread) {
@@ -151,13 +145,9 @@
     gsap.to(thread,{yPercent:20,rotate:5,ease:'none',scrollTrigger:{trigger:'.experience-scene',start:'top bottom',end:'bottom top',scrub:true}});
   }
 
-  document.querySelectorAll('.v3-mist-layer').forEach((layer,i) => {
-    gsap.fromTo(layer,{xPercent:i%2?8:-10},{xPercent:i%2?-10:12,ease:'none',scrollTrigger:{trigger:'.v3-mist',start:'top bottom',end:'bottom top',scrub:true}});
-  });
+  document.querySelectorAll('.v3-mist-layer').forEach((layer,i) => gsap.fromTo(layer,{xPercent:i%2?8:-10},{xPercent:i%2?-10:12,ease:'none',scrollTrigger:{trigger:'.v3-mist',start:'top bottom',end:'bottom top',scrub:true}}));
 
-  document.querySelectorAll('.v3-reveal-media').forEach(media => {
-    gsap.to(media,{clipPath:'inset(0% 0% 0% 0%)',duration:1.05,ease:'power4.out',scrollTrigger:{trigger:media,start:'top 82%',once:true}});
-  });
+  document.querySelectorAll('.v3-reveal-media').forEach(media => gsap.to(media,{clipPath:'inset(0% 0% 0% 0%)',duration:1.05,ease:'power4.out',scrollTrigger:{trigger:media,start:'top 82%',once:true}}));
 
   document.querySelectorAll('.v3-split').forEach(node => {
     if (!SplitText) return;
@@ -166,22 +156,13 @@
   });
 
   document.querySelectorAll('.v3-magnetic').forEach(el => {
-    let xTo = gsap.quickTo(el,'x',{duration:.45,ease:'power3.out'});
-    let yTo = gsap.quickTo(el,'y',{duration:.45,ease:'power3.out'});
-    el.addEventListener('pointermove',e=>{
-      const rect=el.getBoundingClientRect();
-      xTo((e.clientX-(rect.left+rect.width/2))*.12);
-      yTo((e.clientY-(rect.top+rect.height/2))*.12);
-    });
+    const xTo = gsap.quickTo(el,'x',{duration:.45,ease:'power3.out'});
+    const yTo = gsap.quickTo(el,'y',{duration:.45,ease:'power3.out'});
+    el.addEventListener('pointermove',e=>{const rect=el.getBoundingClientRect();xTo((e.clientX-(rect.left+rect.width/2))*.12);yTo((e.clientY-(rect.top+rect.height/2))*.12);});
     el.addEventListener('pointerleave',()=>{xTo(0);yTo(0);});
   });
 
-  const journeyCards = document.querySelectorAll('.journey-card');
-  journeyCards.forEach(card => {
-    const img=card.querySelector('img');
-    if (!img) return;
-    gsap.fromTo(img,{yPercent:-4},{yPercent:4,ease:'none',scrollTrigger:{trigger:card,start:'top bottom',end:'bottom top',scrub:true}});
-  });
+  document.querySelectorAll('.journey-card').forEach(card => {const img=card.querySelector('img');if(img)gsap.fromTo(img,{yPercent:-4},{yPercent:4,ease:'none',scrollTrigger:{trigger:card,start:'top bottom',end:'bottom top',scrub:true}});});
 
   ScrollTrigger.refresh();
 })();
