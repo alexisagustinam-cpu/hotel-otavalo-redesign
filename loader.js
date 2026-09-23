@@ -11,21 +11,25 @@ const fetchText = path => fetch(path).then(response => {
   return response.text();
 });
 
+const loadScript = src => new Promise((resolve, reject) => {
+  const script = document.createElement('script');
+  script.src = src;
+  script.onload = resolve;
+  script.onerror = reject;
+  document.body.appendChild(script);
+});
+
 (async () => {
   try {
     const lowerPromise = Promise.all(lowerParts.map(fetchText));
     const heroHtml = await fetchText(heroPath);
-
-    // Paint the critical above-the-fold content immediately instead of
-    // waiting for the entire page to finish downloading.
     app.innerHTML = heroHtml;
 
     const lowerHtml = await lowerPromise;
     app.insertAdjacentHTML('beforeend', lowerHtml.join(''));
 
-    const script = document.createElement('script');
-    script.src = 'script.js';
-    document.body.appendChild(script);
+    await loadScript('script.js');
+    await loadScript('v2.js');
   } catch (error) {
     console.error(error);
     app.innerHTML = '<main style="padding:40px;font-family:sans-serif">No se pudo cargar la demo.</main>';
