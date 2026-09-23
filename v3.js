@@ -26,7 +26,10 @@
 
   const tasteButtons = [...document.querySelectorAll('[data-taste-trigger]')];
   const tastePanels = [...document.querySelectorAll('[data-taste-panel]')];
+  let tasteIndex = 0;
+  let tasteTimer;
   const setTaste = name => {
+    tasteIndex = Math.max(0, tasteButtons.findIndex(btn => btn.dataset.tasteTrigger === name));
     tasteButtons.forEach(btn => {
       const active = btn.dataset.tasteTrigger === name;
       btn.classList.toggle('is-active', active);
@@ -34,8 +37,19 @@
     });
     tastePanels.forEach(panel => panel.classList.toggle('is-active', panel.dataset.tastePanel === name));
   };
-  tasteButtons.forEach(btn => btn.addEventListener('click', () => setTaste(btn.dataset.tasteTrigger)));
-  if (tasteButtons.length) setTaste(tasteButtons[0].dataset.tasteTrigger);
+  const startTasteAuto = () => {
+    clearInterval(tasteTimer);
+    if (reduceMotion || tasteButtons.length < 2) return;
+    tasteTimer = window.setInterval(() => {
+      tasteIndex = (tasteIndex + 1) % tasteButtons.length;
+      setTaste(tasteButtons[tasteIndex].dataset.tasteTrigger);
+    }, 5200);
+  };
+  tasteButtons.forEach(btn => btn.addEventListener('click', () => { setTaste(btn.dataset.tasteTrigger); startTasteAuto(); }));
+  const tasteStage = document.querySelector('.taste-stage');
+  tasteStage?.addEventListener('pointerenter', () => clearInterval(tasteTimer));
+  tasteStage?.addEventListener('pointerleave', startTasteAuto);
+  if (tasteButtons.length) { setTaste(tasteButtons[0].dataset.tasteTrigger); startTasteAuto(); }
 
   const cookieCard = document.getElementById('v3Cookies');
   const cookieChoice = localStorage.getItem('hotelOtavaloCookies');
@@ -56,8 +70,6 @@
     document.getElementById('v3Intro')?.remove();
     document.querySelectorAll('.v3-reveal-media').forEach(el => el.style.clipPath = 'none');
     observerScene('[data-heritage-step]','[data-heritage-frame]','#heritageProgress');
-    observerScene('[data-stay-step]','[data-stay-frame]','#stayCurrent');
-    observerScene('[data-experience-step]','[data-experience-frame]','#experienceCurrent');
     return;
   }
 
@@ -82,6 +94,7 @@
   const heroCopy = hero?.querySelector('.hero-copy');
   const heroActions = hero?.querySelector('.hero-actions');
   const heroFoot = hero?.querySelector('.hero-foot');
+  const hero360 = hero?.querySelector('.hero-360');
   const award = document.getElementById('v3Award');
 
   let titleSplit = null;
@@ -105,34 +118,57 @@
   else if (heroTitle) entrance.from(heroTitle,{y:34,opacity:0,duration:.82},'-=.44');
   entrance.from([heroCopy,heroActions].filter(Boolean),{y:18,opacity:0,duration:.58,stagger:.08},'-=.42');
   if (heroFoot) entrance.from(heroFoot.children,{y:14,opacity:0,duration:.5,stagger:.06},'-=.3');
+  if (hero360) entrance.from(hero360,{scale:.82,opacity:0,duration:.55,ease:'power3.out'},'-=.34');
   if (award) entrance.fromTo(award,{scale:.62,rotate:-9,opacity:0},{scale:1,rotate:0,opacity:1,duration:.78,ease:'back.out(1.45)'},'-=.44');
 
-  if (hero && award) gsap.to(award,{y:-54,scale:.72,rotate:6,opacity:0,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'42% top',scrub:true}});
+  if (hero && award) {
+    const hideAward = () => gsap.to(award,{y:-34,scale:.76,rotate:5,opacity:0,duration:.42,ease:'power3.inOut',overwrite:true});
+    const showAward = () => gsap.to(award,{y:0,scale:1,rotate:0,opacity:1,duration:.58,ease:'back.out(1.25)',overwrite:true});
+    ScrollTrigger.create({trigger:hero,start:'top+=110 top',end:'bottom top',onEnter:hideAward,onLeaveBack:showAward});
+  }
   if (hero && heroMedia) gsap.to(heroMedia,{yPercent:7,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'bottom top',scrub:true}});
 
-  const animateScene = ({stepsSelector,framesSelector,currentSelector}) => {
-    const steps = [...document.querySelectorAll(stepsSelector)];
-    const frames = [...document.querySelectorAll(framesSelector)];
-    const current = document.querySelector(currentSelector);
-    if (!steps.length || !frames.length) return;
-    const activate = index => {
-      steps.forEach((step,i) => step.classList.toggle('is-active',i===index));
-      frames.forEach((frame,i) => {
-        const active = i===index;
-        frame.classList.toggle('is-active',active);
-        gsap.to(frame,{opacity:active?1:0,scale:active?1:1.035,duration:.72,ease:'power3.out',overwrite:true});
-      });
-      if (current) current.textContent = String(index+1).padStart(2,'0');
-    };
-    activate(0);
-    steps.forEach((step,index) => ScrollTrigger.create({trigger:step,start:'top 58%',end:'bottom 42%',onEnter:()=>activate(index),onEnterBack:()=>activate(index)}));
+  const heritageSteps = [...document.querySelectorAll('[data-heritage-step]')];
+  const heritageFrames = [...document.querySelectorAll('[data-heritage-frame]')];
+  const heritageCurrent = document.querySelector('#heritageProgress');
+  const activateHeritage = index => {
+    heritageSteps.forEach((step,i) => step.classList.toggle('is-active',i===index));
+    heritageFrames.forEach((frame,i) => {
+      const active = i===index;
+      frame.classList.toggle('is-active',active);
+      gsap.to(frame,{opacity:active?1:0,scale:active?1:1.025,duration:.68,ease:'power3.out',overwrite:true});
+    });
+    if (heritageCurrent) heritageCurrent.textContent = String(index+1).padStart(2,'0');
   };
+  if (heritageSteps.length && heritageFrames.length) {
+    activateHeritage(0);
+    heritageSteps.forEach((step,index) => ScrollTrigger.create({trigger:step,start:'top 56%',end:'bottom 44%',onEnter:()=>activateHeritage(index),onEnterBack:()=>activateHeritage(index)}));
+  }
 
-  animateScene({stepsSelector:'[data-heritage-step]',framesSelector:'[data-heritage-frame]',currentSelector:'#heritageProgress'});
-  animateScene({stepsSelector:'[data-stay-step]',framesSelector:'[data-stay-frame]',currentSelector:'#stayCurrent'});
-  animateScene({stepsSelector:'[data-experience-step]',framesSelector:'[data-experience-frame]',currentSelector:'#experienceCurrent'});
+  document.querySelectorAll('[data-heritage-step] .year').forEach(year => gsap.from(year,{xPercent:-14,opacity:.18,ease:'none',scrollTrigger:{trigger:year,start:'top 82%',end:'center 54%',scrub:true}}));
 
-  document.querySelectorAll('[data-heritage-step] .year').forEach(year => gsap.from(year,{xPercent:-22,opacity:.12,ease:'none',scrollTrigger:{trigger:year,start:'top 85%',end:'center 52%',scrub:true}}));
+  const stayArea = document.querySelector('.stay-horizontal');
+  const stayTrack = document.querySelector('.stay-horizontal-track');
+  const stayProgress = document.querySelector('.stay-horizontal-progress');
+  if (stayArea && stayTrack && window.matchMedia('(min-width:1081px)').matches) {
+    const distance = () => Math.max(0, stayTrack.scrollWidth - stayArea.clientWidth);
+    gsap.to(stayTrack, {
+      x: () => -distance(),
+      ease:'none',
+      scrollTrigger:{trigger:stayArea,start:'top 112px',end:() => `+=${Math.max(distance(), window.innerWidth * .9)}`,scrub:1,pin:true,anticipatePin:1,invalidateOnRefresh:true,onUpdate:self => stayProgress?.style.setProperty('--stay-progress', String(Math.max(.08,self.progress)))}
+    });
+    document.querySelectorAll('.stay-card').forEach((card,i) => {
+      const img = card.querySelector('img');
+      if (img) gsap.fromTo(img,{xPercent:i%2?3:-3,scale:1.06},{xPercent:i%2?-2:2,scale:1.01,ease:'none',scrollTrigger:{trigger:stayArea,start:'top 112px',end:() => `+=${Math.max(distance(), window.innerWidth*.9)}`,scrub:true}});
+    });
+  }
+
+  const experienceTiles = [...document.querySelectorAll('.experience-tile')];
+  experienceTiles.forEach((tile,i) => {
+    gsap.from(tile,{y:i%2?92:64,x:i%3===0?-28:(i%3===2?28:0),rotate:i%2?1.5:-1.2,opacity:0,duration:.95,ease:'power4.out',scrollTrigger:{trigger:tile,start:'top 88%',once:true}});
+    const img=tile.querySelector('img');
+    if (img) gsap.fromTo(img,{yPercent:-7,scale:1.05},{yPercent:3,scale:1.015,ease:'none',scrollTrigger:{trigger:tile,start:'top bottom',end:'bottom top',scrub:true}});
+  });
 
   const thread = document.querySelector('.experience-thread');
   if (thread) {
@@ -142,10 +178,8 @@
       gsap.set(path,{strokeDasharray:`${length*.05} ${length*.035}`,strokeDashoffset:length*.22});
       gsap.to(path,{strokeDashoffset:-length*.26,ease:'none',scrollTrigger:{trigger:'.experience-scene',start:'top bottom',end:'bottom top',scrub:true},delay:i*.06});
     });
-    gsap.to(thread,{yPercent:20,rotate:5,ease:'none',scrollTrigger:{trigger:'.experience-scene',start:'top bottom',end:'bottom top',scrub:true}});
+    gsap.to(thread,{yPercent:16,rotate:4,ease:'none',scrollTrigger:{trigger:'.experience-scene',start:'top bottom',end:'bottom top',scrub:true}});
   }
-
-  document.querySelectorAll('.v3-mist-layer').forEach((layer,i) => gsap.fromTo(layer,{xPercent:i%2?8:-10},{xPercent:i%2?-10:12,ease:'none',scrollTrigger:{trigger:'.v3-mist',start:'top bottom',end:'bottom top',scrub:true}}));
 
   document.querySelectorAll('.v3-reveal-media').forEach(media => gsap.to(media,{clipPath:'inset(0% 0% 0% 0%)',duration:1.05,ease:'power4.out',scrollTrigger:{trigger:media,start:'top 82%',once:true}}));
 
