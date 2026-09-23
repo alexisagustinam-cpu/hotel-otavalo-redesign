@@ -28,29 +28,63 @@ const decodeImage = img => new Promise(resolve => {
   }, {once:true});
 });
 
+const runIdle = (fn, timeout=900) => {
+  if ('requestIdleCallback' in window) requestIdleCallback(fn, {timeout});
+  else setTimeout(fn, Math.min(timeout, 450));
+};
+
 const prepareHomepageImages = heroImage => {
   const heroSlides = [...document.querySelectorAll('.hero-slide img')].filter(img => img !== heroImage);
-  heroSlides.forEach(img => {
+
+  /* Only the next hero frame gets immediate priority. */
+  const nextHero = heroSlides[0];
+  if (nextHero) {
+    nextHero.loading='eager';
+    nextHero.decoding='async';
+    nextHero.fetchPriority='high';
+    decodeImage(nextHero);
+  }
+
+  /* Remaining hero frames warm quietly once the first paint is safe. */
+  runIdle(() => heroSlides.slice(1).forEach(img => {
     img.loading='eager';
     img.decoding='async';
-    img.fetchPriority='high';
+    img.fetchPriority='auto';
     decodeImage(img);
-  });
+  }), 550);
 
-  /* Only the next two chapters compete for bandwidth immediately. */
-  const early = [...document.querySelectorAll('.heritage-frame img,.stay-card img')];
-  early.forEach((img,index) => {
+  /* Heritage is the next visible chapter. */
+  const heritage = [...document.querySelectorAll('.heritage-frame img')];
+  heritage.slice(0,2).forEach(img => {
     img.loading='eager';
     img.decoding='async';
-    img.fetchPriority=index < 3 ? 'high' : 'auto';
+    img.fetchPriority='auto';
     decodeImage(img);
   });
+  runIdle(() => heritage.slice(2).forEach(img => {
+    img.loading='eager';
+    img.decoding='async';
+    decodeImage(img);
+  }), 700);
 
-  /* Everything else starts loading shortly before it becomes visible. */
+  /* Rooms load in the background well before the user reaches the horizontal chapter. */
+  const rooms = [...document.querySelectorAll('.stay-card img')];
+  rooms.forEach(img => {
+    img.classList.add('image-pending');
+    img.decoding='async';
+    img.fetchPriority='auto';
+  });
+  runIdle(() => rooms.forEach(img => {
+    img.loading='eager';
+    decodeImage(img);
+  }), 800);
+
+  /* Lower-page media starts roughly 1200px before entering the viewport. */
   const later = [...document.querySelectorAll('.experience-tile img,.taste-panel img,.events-compact-media img,.journey-card img')];
   later.forEach(img => {
     img.loading='lazy';
     img.decoding='async';
+    img.fetchPriority='low';
     img.classList.add('image-pending');
   });
 
@@ -60,13 +94,14 @@ const prepareHomepageImages = heroImage => {
         if (!entry.isIntersecting) return;
         const img = entry.target;
         img.loading='eager';
+        img.fetchPriority='auto';
         decodeImage(img);
         observer.unobserve(img);
       });
-    }, {rootMargin:'900px 0px'});
+    }, {rootMargin:'1200px 0px'});
     later.forEach(img => observer.observe(img));
   } else {
-    setTimeout(() => later.forEach(decodeImage), 500);
+    runIdle(() => later.forEach(decodeImage), 1100);
   }
 };
 
@@ -80,7 +115,7 @@ const prepareHomepageImages = heroImage => {
 
     await loadScript('script.js');
 
-    /* Do not start the cinematic entrance until the first hero image is actually decoded. */
+    /* The cinematic entrance cannot start until the first hero image is fully loaded and decoded. */
     const heroImage=document.querySelector('.hero-slide.is-active img') || document.querySelector('.hero-slide img') || document.querySelector('.hero-media img');
     if(heroImage){
       heroImage.loading='eager';
