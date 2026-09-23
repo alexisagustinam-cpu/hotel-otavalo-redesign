@@ -3,13 +3,10 @@
 .image-ready{opacity:1!important;transition:opacity .22s cubic-bezier(.22,1,.36,1)!important}
 .hero-slide img.image-ready{transition:none!important}
 
-/* Hero: always reveal the fully decoded image as one complete frame.
-   V3 still animates a subtle scale, but its inset clip-path must never show
-   the center first and the edges afterwards. */
+/* Hero: the container itself never uses the old inset reveal.
+   Individual slides remain free to animate their clip-path horizontally. */
 .hero-v2 .hero-media,
-.hero-v2 .hero-cinema,
-.hero-v2 .hero-slide,
-.hero-v2 .hero-slide img{
+.hero-v2 .hero-cinema{
   clip-path:none!important;
   -webkit-clip-path:none!important;
   mask:none!important;
@@ -25,6 +22,8 @@
   height:100%!important;
   object-fit:cover!important;
   object-position:center!important;
+  mask:none!important;
+  -webkit-mask:none!important;
 }
 .hero-morph-canvas{
   position:absolute;
