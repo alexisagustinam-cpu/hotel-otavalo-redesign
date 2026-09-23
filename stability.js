@@ -1,144 +1,106 @@
 (() => {
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
-  if (!gsap || !ScrollTrigger) return;
-
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   const killTriggersInside = root => {
-    if (!root) return;
+    if (!root || !ScrollTrigger) return;
     ScrollTrigger.getAll().forEach(st => {
       const trigger = st.trigger;
       if (trigger === root || (trigger instanceof Element && root.contains(trigger))) st.kill(true);
     });
   };
 
-  /* Rooms — no drag, no GSAP pin. Native sticky + one scrubbed horizontal tween. */
+  /* Rooms: native sticky shell + direct scroll mapping. No GSAP pin and no drag. */
   const stayScene = document.querySelector('.stay-scene');
   const oldStayArea = document.querySelector('.stay-horizontal');
-  if (stayScene && oldStayArea && !reduceMotion && window.matchMedia('(min-width:761px)').matches) {
+  if (stayScene && oldStayArea && window.matchMedia('(min-width:761px)').matches && !reduceMotion) {
     killTriggersInside(oldStayArea);
-    const oldTrack = oldStayArea.querySelector('.stay-horizontal-track');
-    const oldCards = [...oldStayArea.querySelectorAll('.stay-card')];
-    gsap.killTweensOf([oldStayArea, oldTrack, ...oldCards, ...oldStayArea.querySelectorAll('img')].filter(Boolean));
+    if (gsap) {
+      const oldTrack = oldStayArea.querySelector('.stay-horizontal-track');
+      gsap.killTweensOf([oldStayArea, oldTrack, ...oldStayArea.querySelectorAll('.stay-card'), ...oldStayArea.querySelectorAll('img')].filter(Boolean));
+    }
 
-    /* Clone once to remove every pointer listener installed by older versions. */
+    /* Clone to remove pointer listeners installed by previous iterations. */
     const stayArea = oldStayArea.cloneNode(true);
     oldStayArea.replaceWith(stayArea);
-    const stayTrack = stayArea.querySelector('.stay-horizontal-track');
-    const stayProgress = stayArea.querySelector('.stay-horizontal-progress');
-    const cards = [...stayArea.querySelectorAll('.stay-card')];
+    stayArea.querySelector('.stay-drag-hint')?.remove();
 
-    gsap.set(stayArea, {clearProps:'transform,opacity'});
-    gsap.set(stayTrack, {x:0});
-    cards.forEach(card => {
-      const img = card.querySelector('img');
-      if (img) gsap.set(img, {clearProps:'transform'});
-    });
+    const track = stayArea.querySelector('.stay-horizontal-track');
+    const progress = stayArea.querySelector('.stay-horizontal-progress');
+    if (track) {
+      const shell = document.createElement('div');
+      shell.className = 'stay-scroll-shell';
+      stayArea.parentNode.insertBefore(shell, stayArea);
+      shell.appendChild(stayArea);
 
-    const distance = () => Math.max(0, stayTrack.scrollWidth - stayArea.clientWidth);
-    const travel = () => Math.max(distance(), window.innerWidth * 1.15);
-    const syncSceneSpace = () => {
-      stayScene.style.setProperty('--stay-scroll-space', `${Math.ceil(travel() + window.innerHeight * .08)}px`);
-    };
-    syncSceneSpace();
+      let distance = 0;
+      let start = 0;
+      let raf = 0;
 
-    /* The frame grows into place before the horizontal sequence begins. */
-    gsap.fromTo(stayArea,
-      {scale:.92, opacity:.9},
-      {
-        scale:1,
-        opacity:1,
-        ease:'none',
-        scrollTrigger:{trigger:stayArea,start:'top 86%',end:'top 22%',scrub:.55}
-      }
-    );
-
-    const roomTween = gsap.to(stayTrack, {
-      x:() => -distance(),
-      ease:'none',
-      scrollTrigger:{
-        trigger:stayArea,
-        start:'top 16%',
-        end:() => `+=${travel()}`,
-        scrub:.75,
-        invalidateOnRefresh:true,
-        onUpdate:self => stayProgress?.style.setProperty('--stay-progress', String(Math.max(.04, self.progress)))
-      }
-    });
-
-    cards.forEach((card,index) => {
-      const img = card.querySelector('img');
-      if (!img) return;
-      gsap.fromTo(img,
-        {xPercent:index % 2 ? 2.2 : -2.2, scale:1.04},
-        {
-          xPercent:index % 2 ? -1.3 : 1.3,
-          scale:1.01,
-          ease:'none',
-          scrollTrigger:{trigger:stayArea,start:'top 16%',end:() => `+=${travel()}`,scrub:true}
+      const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+      const sync = () => {
+        raf = 0;
+        if (!distance) {
+          track.style.transform = 'translate3d(0,0,0)';
+          return;
         }
-      );
-    });
+        const p = clamp((window.scrollY - start) / distance, 0, 1);
+        track.style.transform = `translate3d(${-distance * p}px,0,0)`;
+        progress?.style.setProperty('--stay-progress', String(Math.max(.04, p)));
+      };
+      const requestSync = () => {
+        if (!raf) raf = requestAnimationFrame(sync);
+      };
+      const measure = () => {
+        track.style.transform = 'translate3d(0,0,0)';
+        distance = Math.max(0, track.scrollWidth - stayArea.clientWidth);
+        const stickyHeight = stayArea.offsetHeight;
+        shell.style.height = `${Math.ceil(stickyHeight + distance)}px`;
+        const topOffset = window.innerHeight * .16;
+        const shellTop = shell.getBoundingClientRect().top + window.scrollY;
+        start = shellTop - topOffset;
+        sync();
+      };
 
-    window.addEventListener('resize', () => {
-      syncSceneSpace();
-      roomTween.scrollTrigger?.refresh();
-    }, {passive:true});
+      window.addEventListener('scroll', requestSync, {passive:true});
+      window.addEventListener('resize', () => requestAnimationFrame(measure), {passive:true});
+      stayArea.querySelectorAll('img').forEach(img => {
+        if (!img.complete) img.addEventListener('load', () => requestAnimationFrame(measure), {once:true});
+      });
+      if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(measure)).observe(stayArea);
+      requestAnimationFrame(measure);
+    }
   }
 
-  /* Experiences — stable editorial reveals; keep this chapter dark. */
-  const experienceScene = document.querySelector('.experience-scene');
-  if (experienceScene && !reduceMotion) {
-    killTriggersInside(experienceScene);
-    const tiles = [...experienceScene.querySelectorAll('.experience-tile')];
-    const center = experienceScene.querySelector('.experience-center-mark');
-    const thread = experienceScene.querySelector('.experience-thread');
-    gsap.killTweensOf([experienceScene, center, thread, ...tiles, ...experienceScene.querySelectorAll('img'), ...experienceScene.querySelectorAll('figure')].filter(Boolean));
-    gsap.set(tiles, {clearProps:'transform,opacity'});
-    gsap.set(experienceScene.querySelectorAll('figure'), {clearProps:'clipPath,transform'});
-    gsap.set(experienceScene.querySelectorAll('img'), {clearProps:'transform'});
-    if (thread) gsap.set(thread, {clearProps:'transform'});
-
-    const masks = [
-      'inset(0 100% 0 0)',
-      'inset(100% 0 0 0)',
-      'inset(0 0 100% 0)',
-      'inset(0 0 0 100%)',
-      'inset(100% 0 0 0)'
-    ];
-    tiles.forEach((tile,index) => {
-      const figure = tile.querySelector('figure');
-      gsap.fromTo(tile,
-        {y:index % 2 ? 44 : 66, opacity:0},
-        {y:0, opacity:1, duration:.9, ease:'power4.out', scrollTrigger:{trigger:tile,start:'top 88%',once:true}, delay:index*.035}
-      );
-      if (figure) gsap.fromTo(figure,
-        {clipPath:masks[index] || masks[0]},
-        {clipPath:'inset(0)', duration:1.05, ease:'power4.inOut', scrollTrigger:{trigger:tile,start:'top 90%',once:true}}
-      );
-    });
-    if (center) gsap.fromTo(center,
-      {xPercent:-6, opacity:.3},
-      {xPercent:6, opacity:1, ease:'none', scrollTrigger:{trigger:experienceScene,start:'top bottom',end:'bottom top',scrub:true}}
-    );
-  }
-
-  /* Collection — whitespace separates properties, never lines. */
+  /* Journey: never allow reveal/parallax logic to hide the property images. */
   const journey = document.querySelector('.journey');
-  if (journey && !reduceMotion) {
+  if (journey) {
     killTriggersInside(journey);
     const cards = [...journey.querySelectorAll('.journey-card')];
-    cards.forEach((card,index) => {
-      gsap.killTweensOf([card, card.querySelector('img')].filter(Boolean));
-      gsap.set(card, {clearProps:'transform,opacity,clipPath'});
+    cards.forEach(card => {
+      card.classList.remove('v3-reveal-media');
+      if (gsap) gsap.killTweensOf([card, card.querySelector('img')].filter(Boolean));
+      card.style.opacity = '1';
+      card.style.visibility = 'visible';
+      card.style.clipPath = 'none';
+      card.style.transform = 'none';
       const img = card.querySelector('img');
-      if (img) gsap.set(img, {clearProps:'transform'});
-      gsap.fromTo(card,
-        {y:30 + index * 6, opacity:0},
-        {y:0, opacity:1, duration:.82, ease:'power3.out', scrollTrigger:{trigger:card,start:'top 90%',once:true}, delay:index*.07}
-      );
+      if (img) {
+        img.style.opacity = '1';
+        img.style.visibility = 'visible';
+        img.style.transform = 'none';
+      }
     });
   }
 
-  requestAnimationFrame(() => ScrollTrigger.refresh());
+  /* Experiences keep the approved dark chapter; only clear stale hidden states. */
+  const experienceScene = document.querySelector('.experience-scene');
+  if (experienceScene) {
+    experienceScene.querySelectorAll('.experience-tile').forEach(tile => {
+      if (tile.style.visibility === 'hidden') tile.style.visibility = 'visible';
+    });
+  }
+
+  if (ScrollTrigger) requestAnimationFrame(() => ScrollTrigger.refresh());
 })();
