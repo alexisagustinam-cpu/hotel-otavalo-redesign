@@ -1,0 +1,31 @@
+/* Desktop dropdown stability: keep a continuous hover corridor between label and menu. */
+@media (min-width:761px){
+  .desktop-nav .nav-group{
+    position:relative;
+    overflow:visible;
+  }
+
+  .desktop-nav .nav-group::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:100%;
+    width:max(100%,280px);
+    height:26px;
+    transform:translateX(-50%);
+    pointer-events:auto;
+  }
+
+  .desktop-nav .nav-dropdown{
+    top:calc(100% + 10px)!important;
+  }
+
+  .desktop-nav .nav-group:hover .nav-dropdown,
+  .desktop-nav .nav-group:focus-within .nav-dropdown,
+  .desktop-nav .nav-dropdown:hover{
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    transform:translate(-50%,0)!important;
+  }
+}
