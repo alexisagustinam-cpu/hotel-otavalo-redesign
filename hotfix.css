@@ -3,6 +3,30 @@
 .image-ready{opacity:1!important;transition:opacity .22s cubic-bezier(.22,1,.36,1)!important}
 .hero-slide img.image-ready{transition:none!important}
 
+/* Hero: always reveal the fully decoded image as one complete frame.
+   V3 still animates a subtle scale, but its inset clip-path must never show
+   the center first and the edges afterwards. */
+.hero-v2 .hero-media,
+.hero-v2 .hero-cinema,
+.hero-v2 .hero-slide,
+.hero-v2 .hero-slide img{
+  clip-path:none!important;
+  -webkit-clip-path:none!important;
+  mask:none!important;
+  -webkit-mask:none!important;
+}
+.hero-v2 .hero-media{
+  transform-origin:center center!important;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+.hero-v2 .hero-slide img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+
 @media (min-width:761px){
   /* Approved rhythm: heritage dark → rooms light → experiences dark → gastronomy light */
   .stay-scene{
