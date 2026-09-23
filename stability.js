@@ -1,106 +1,131 @@
 (() => {
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!gsap || !ScrollTrigger) return;
 
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const killTriggersInside = root => {
-    if (!root || !ScrollTrigger) return;
+    if (!root) return;
     ScrollTrigger.getAll().forEach(st => {
       const trigger = st.trigger;
       if (trigger === root || (trigger instanceof Element && root.contains(trigger))) st.kill(true);
     });
   };
 
-  /* Rooms: native sticky shell + direct scroll mapping. No GSAP pin and no drag. */
-  const stayScene = document.querySelector('.stay-scene');
-  const oldStayArea = document.querySelector('.stay-horizontal');
-  if (stayScene && oldStayArea && window.matchMedia('(min-width:761px)').matches && !reduceMotion) {
-    killTriggersInside(oldStayArea);
-    if (gsap) {
-      const oldTrack = oldStayArea.querySelector('.stay-horizontal-track');
-      gsap.killTweensOf([oldStayArea, oldTrack, ...oldStayArea.querySelectorAll('.stay-card'), ...oldStayArea.querySelectorAll('img')].filter(Boolean));
-    }
+  /* Rooms: one system only — vertical scroll controls horizontal travel. */
+  const originalStay = document.querySelector('.stay-horizontal');
+  if (originalStay && !reduceMotion && window.matchMedia('(min-width:761px)').matches) {
+    killTriggersInside(originalStay);
+    gsap.killTweensOf([
+      originalStay,
+      originalStay.querySelector('.stay-horizontal-track'),
+      ...originalStay.querySelectorAll('.stay-card'),
+      ...originalStay.querySelectorAll('.stay-card img')
+    ].filter(Boolean));
 
-    /* Clone to remove pointer listeners installed by previous iterations. */
-    const stayArea = oldStayArea.cloneNode(true);
-    oldStayArea.replaceWith(stayArea);
-    stayArea.querySelector('.stay-drag-hint')?.remove();
+    const stay = originalStay.cloneNode(true);
+    originalStay.replaceWith(stay);
+    stay.querySelector('.stay-drag-hint')?.remove();
 
-    const track = stayArea.querySelector('.stay-horizontal-track');
-    const progress = stayArea.querySelector('.stay-horizontal-progress');
-    if (track) {
-      const shell = document.createElement('div');
-      shell.className = 'stay-scroll-shell';
-      stayArea.parentNode.insertBefore(shell, stayArea);
-      shell.appendChild(stayArea);
+    const track = stay.querySelector('.stay-horizontal-track');
+    const progress = stay.querySelector('.stay-horizontal-progress');
+    const cards = [...stay.querySelectorAll('.stay-card')];
 
-      let distance = 0;
-      let start = 0;
-      let raf = 0;
+    gsap.set(stay, {clearProps:'position,top,left,right,bottom,transform,opacity'});
+    gsap.set(track, {x:0});
+    cards.forEach(card => {
+      gsap.set(card, {clearProps:'transform,opacity'});
+      const img = card.querySelector('img');
+      if (img) gsap.set(img, {clearProps:'transform'});
+    });
 
-      const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-      const sync = () => {
-        raf = 0;
-        if (!distance) {
-          track.style.transform = 'translate3d(0,0,0)';
-          return;
-        }
-        const p = clamp((window.scrollY - start) / distance, 0, 1);
-        track.style.transform = `translate3d(${-distance * p}px,0,0)`;
-        progress?.style.setProperty('--stay-progress', String(Math.max(.04, p)));
-      };
-      const requestSync = () => {
-        if (!raf) raf = requestAnimationFrame(sync);
-      };
-      const measure = () => {
-        track.style.transform = 'translate3d(0,0,0)';
-        distance = Math.max(0, track.scrollWidth - stayArea.clientWidth);
-        const stickyHeight = stayArea.offsetHeight;
-        shell.style.height = `${Math.ceil(stickyHeight + distance)}px`;
-        const topOffset = window.innerHeight * .16;
-        const shellTop = shell.getBoundingClientRect().top + window.scrollY;
-        start = shellTop - topOffset;
-        sync();
-      };
+    const distance = () => Math.max(1, track.scrollWidth - stay.clientWidth);
 
-      window.addEventListener('scroll', requestSync, {passive:true});
-      window.addEventListener('resize', () => requestAnimationFrame(measure), {passive:true});
-      stayArea.querySelectorAll('img').forEach(img => {
-        if (!img.complete) img.addEventListener('load', () => requestAnimationFrame(measure), {once:true});
-      });
-      if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(measure)).observe(stayArea);
-      requestAnimationFrame(measure);
-    }
+    gsap.fromTo(stay,
+      {scale:.94},
+      {scale:1,ease:'none',scrollTrigger:{trigger:stay,start:'top 88%',end:'center center',scrub:.45}}
+    );
+
+    const roomST = ScrollTrigger.create({
+      trigger: stay,
+      start: 'center center',
+      end: () => `+=${distance()}`,
+      pin: true,
+      pinSpacing: true,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onUpdate: self => {
+        const d = distance();
+        gsap.set(track, {x: -d * self.progress});
+        progress?.style.setProperty('--stay-progress', String(Math.max(.04, self.progress)));
+      },
+      onRefresh: self => {
+        const d = distance();
+        gsap.set(track, {x: -d * self.progress});
+      }
+    });
+
+    window.addEventListener('load', () => roomST.refresh(), {once:true});
   }
 
-  /* Journey: never allow reveal/parallax logic to hide the property images. */
+  /* Experiences: clear legacy overlapping motion and reveal only after the image is ready. */
+  const experience = document.querySelector('.experience-scene');
+  if (experience && !reduceMotion) {
+    killTriggersInside(experience);
+    const tiles = [...experience.querySelectorAll('.experience-tile')];
+    const figures = [...experience.querySelectorAll('.experience-tile figure')];
+    const imgs = [...experience.querySelectorAll('.experience-tile img')];
+    gsap.killTweensOf([...tiles, ...figures, ...imgs]);
+    gsap.set(figures, {clipPath:'none'});
+    gsap.set(imgs, {clearProps:'transform'});
+
+    tiles.forEach((tile,index) => {
+      gsap.set(tile, {opacity:0, y:32 + (index % 2) * 14});
+      ScrollTrigger.create({
+        trigger: tile,
+        start: 'top 90%',
+        once: true,
+        onEnter: () => {
+          const img = tile.querySelector('img');
+          const reveal = () => gsap.to(tile,{opacity:1,y:0,duration:.72,ease:'power3.out',delay:index*.03});
+          if (!img || (img.complete && img.naturalWidth)) reveal();
+          else img.addEventListener('load', reveal, {once:true});
+        }
+      });
+    });
+  }
+
+  /* Collection: remove every legacy clip/reveal that can hide the three hotel cards. */
   const journey = document.querySelector('.journey');
   if (journey) {
     killTriggersInside(journey);
     const cards = [...journey.querySelectorAll('.journey-card')];
-    cards.forEach(card => {
+    cards.forEach((card,index) => {
       card.classList.remove('v3-reveal-media');
-      if (gsap) gsap.killTweensOf([card, card.querySelector('img')].filter(Boolean));
-      card.style.opacity = '1';
-      card.style.visibility = 'visible';
-      card.style.clipPath = 'none';
-      card.style.transform = 'none';
       const img = card.querySelector('img');
-      if (img) {
-        img.style.opacity = '1';
-        img.style.visibility = 'visible';
-        img.style.transform = 'none';
+      gsap.killTweensOf([card,img].filter(Boolean));
+      gsap.set(card,{clipPath:'none',visibility:'visible',clearProps:'transform'});
+      if (img) gsap.set(img,{visibility:'visible',clearProps:'transform,clipPath'});
+
+      if (reduceMotion) {
+        gsap.set(card,{opacity:1,y:0});
+        if (img) gsap.set(img,{opacity:1});
+        return;
       }
+
+      gsap.set(card,{opacity:0,y:26});
+      ScrollTrigger.create({
+        trigger:card,
+        start:'top 92%',
+        once:true,
+        onEnter:()=>{
+          const reveal=()=>gsap.to(card,{opacity:1,y:0,duration:.68,ease:'power3.out',delay:index*.05});
+          if(!img||(img.complete&&img.naturalWidth)) reveal();
+          else img.addEventListener('load',reveal,{once:true});
+        }
+      });
     });
   }
 
-  /* Experiences keep the approved dark chapter; only clear stale hidden states. */
-  const experienceScene = document.querySelector('.experience-scene');
-  if (experienceScene) {
-    experienceScene.querySelectorAll('.experience-tile').forEach(tile => {
-      if (tile.style.visibility === 'hidden') tile.style.visibility = 'visible';
-    });
-  }
-
-  if (ScrollTrigger) requestAnimationFrame(() => ScrollTrigger.refresh());
+  requestAnimationFrame(() => ScrollTrigger.refresh());
 })();
