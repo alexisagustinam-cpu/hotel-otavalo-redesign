@@ -20,12 +20,23 @@ const decodeImage = img => new Promise(resolve => {
     });
   };
 
-  if (img.complete && img.naturalWidth > 0) return finish();
-  img.addEventListener('load', finish, {once:true});
-  img.addEventListener('error', () => {
+  const fail = () => {
+    const fallback = img.dataset.fallback;
+    if (fallback && img.dataset.fallbackTried !== '1') {
+      img.dataset.fallbackTried = '1';
+      img.removeAttribute('srcset');
+      img.src = fallback;
+      img.addEventListener('load', finish, {once:true});
+      img.addEventListener('error', () => { img.classList.remove('image-pending'); resolve(); }, {once:true});
+      return;
+    }
     img.classList.remove('image-pending');
     resolve();
-  }, {once:true});
+  };
+
+  if (img.complete && img.naturalWidth > 0) return finish();
+  img.addEventListener('load', finish, {once:true});
+  img.addEventListener('error', fail, {once:true});
 });
 
 const runIdle = (fn, timeout=900) => {
@@ -125,6 +136,9 @@ const prepareHomepageImages = heroImage => {
     }
     prepareHomepageImages(heroImage);
 
+    /* Ported from the supplied Morph Gallery concept: WebGL morph when CORS allows it,
+       horizontal right-to-left wipe fallback otherwise. */
+    await loadScript('hero-morph.js');
     await loadScript('v2.js');
     await safeLoad('https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js');
     await Promise.all([
