@@ -1,0 +1,98 @@
+/* Final interaction hotfix — restore approved section alternation and remove drag-related layout conflicts */
+
+@media (min-width:761px){
+  /* Approved rhythm: heritage dark → rooms light → experiences dark → gastronomy light */
+  .stay-scene{
+    --stay-scroll-space:0px;
+    background:#f4f1ea!important;
+    color:#13272b!important;
+    overflow:visible!important;
+    padding-top:clamp(100px,10vw,160px)!important;
+    padding-bottom:calc(clamp(110px,10vw,160px) + var(--stay-scroll-space))!important;
+  }
+  .stay-scene .v3-scene-head{margin-bottom:clamp(68px,7vw,104px)!important}
+  .stay-scene .v3-scene-head h2,
+  .stay-scene .v3-scene-head .section-index{color:#13272b!important}
+  .stay-scene .v3-scene-head>p:last-child{color:#66706d!important}
+
+  /* Native sticky viewport: no GSAP pin, no mouse drag. */
+  .stay-horizontal{
+    position:sticky!important;
+    top:16svh!important;
+    width:min(88vw,1260px)!important;
+    height:min(68svh,690px)!important;
+    min-height:520px!important;
+    margin:0 auto!important;
+    overflow:hidden!important;
+    background:#071719!important;
+    box-shadow:0 24px 70px rgba(3,12,14,.18)!important;
+    touch-action:auto!important;
+    user-select:auto!important;
+    cursor:default!important;
+    transform-origin:center center!important;
+  }
+  .stay-horizontal-track{
+    display:flex!important;
+    align-items:stretch!important;
+    height:100%!important;
+    width:max-content!important;
+    gap:clamp(18px,2vw,30px)!important;
+    padding:0!important;
+    will-change:transform!important;
+  }
+  .stay-card{
+    position:relative!important;
+    flex:none!important;
+    width:min(82vw,1120px)!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    background:#071719!important;
+  }
+  .stay-card figure{position:absolute!important;inset:0!important;margin:0!important}
+  .stay-card img{width:100%!important;height:100%!important;object-fit:cover!important}
+  .stay-drag-hint{display:none!important}
+  .room-dragging,.room-dragging *{cursor:auto!important}
+
+  /* Experiences return to the dark chapter. */
+  .experience-scene{
+    background:#102326!important;
+    color:#fff!important;
+    padding-top:clamp(100px,10vw,155px)!important;
+    padding-bottom:clamp(100px,10vw,155px)!important;
+    overflow:hidden!important;
+  }
+  .experience-scene .v3-scene-head h2,
+  .experience-scene .v3-scene-head .section-index,
+  .experience-scene .v3-scene-head p{color:#fff!important}
+  .experience-scene .v3-scene-head>p:last-child{color:rgba(255,255,255,.62)!important}
+  .experience-thread{color:rgba(199,93,63,.28)!important}
+  .experience-center-mark{color:rgba(255,255,255,.075)!important}
+  .experience-center-mark small{color:rgba(255,255,255,.34)!important}
+  .experience-tile{color:#fff!important;box-shadow:0 18px 50px rgba(0,0,0,.14)!important}
+  .experience-all .text-link-light{color:#fff!important}
+
+  /* Collection: separation by whitespace only, never divider lines. */
+  .journey-grid{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:clamp(24px,2.8vw,42px)!important;
+    background:transparent!important;
+    align-items:start!important;
+  }
+  .journey-card{border:0!important;outline:0!important;box-shadow:none!important}
+  .journey-card+.journey-card::before{content:none!important;display:none!important}
+  .journey-card:nth-child(2){margin-top:34px!important}
+  .journey-card:nth-child(3){margin-top:0!important}
+}
+
+@media (max-width:760px){
+  .stay-scene{background:#f4f1ea!important;color:#13272b!important}
+  .stay-drag-hint{display:none!important}
+  .experience-scene{background:#102326!important;color:#fff!important}
+  .experience-scene .v3-scene-head h2,
+  .experience-scene .v3-scene-head .section-index,
+  .experience-scene .v3-scene-head p{color:#fff!important}
+  .experience-all .text-link-light{color:#fff!important}
+  .journey-card+.journey-card::before{display:none!important}
+}
