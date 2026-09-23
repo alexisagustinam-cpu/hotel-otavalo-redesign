@@ -24,6 +24,7 @@
     steps.forEach(step => observer.observe(step));
   };
 
+  /* Gastronomy rotates on its own. Manual selection resets the timer, but hover never freezes it. */
   const tasteButtons = [...document.querySelectorAll('[data-taste-trigger]')];
   const tastePanels = [...document.querySelectorAll('[data-taste-panel]')];
   let tasteIndex = 0;
@@ -43,13 +44,16 @@
     tasteTimer = window.setInterval(() => {
       tasteIndex = (tasteIndex + 1) % tasteButtons.length;
       setTaste(tasteButtons[tasteIndex].dataset.tasteTrigger);
-    }, 5200);
+    }, 4800);
   };
-  tasteButtons.forEach(btn => btn.addEventListener('click', () => { setTaste(btn.dataset.tasteTrigger); startTasteAuto(); }));
-  const tasteStage = document.querySelector('.taste-stage');
-  tasteStage?.addEventListener('pointerenter', () => clearInterval(tasteTimer));
-  tasteStage?.addEventListener('pointerleave', startTasteAuto);
-  if (tasteButtons.length) { setTaste(tasteButtons[0].dataset.tasteTrigger); startTasteAuto(); }
+  tasteButtons.forEach(btn => btn.addEventListener('click', () => {
+    setTaste(btn.dataset.tasteTrigger);
+    startTasteAuto();
+  }));
+  if (tasteButtons.length) {
+    setTaste(tasteButtons[0].dataset.tasteTrigger);
+    startTasteAuto();
+  }
 
   const cookieCard = document.getElementById('v3Cookies');
   const cookieChoice = localStorage.getItem('hotelOtavaloCookies');
@@ -118,16 +122,18 @@
   else if (heroTitle) entrance.from(heroTitle,{y:34,opacity:0,duration:.82},'-=.44');
   entrance.from([heroCopy,heroActions].filter(Boolean),{y:18,opacity:0,duration:.58,stagger:.08},'-=.42');
   if (heroFoot) entrance.from(heroFoot.children,{y:14,opacity:0,duration:.5,stagger:.06},'-=.3');
-  if (hero360) entrance.from(hero360,{scale:.82,opacity:0,duration:.55,ease:'power3.out'},'-=.34');
+  if (hero360) entrance.from(hero360,{scale:.74,opacity:0,rotate:8,duration:.72,ease:'back.out(1.3)'},'-=.36');
   if (award) entrance.fromTo(award,{scale:.62,rotate:-9,opacity:0},{scale:1,rotate:0,opacity:1,duration:.78,ease:'back.out(1.45)'},'-=.44');
 
+  /* MICHELIN performs a discrete exit and re-entry, not a scrubbed fade. */
   if (hero && award) {
-    const hideAward = () => gsap.to(award,{y:-34,scale:.76,rotate:5,opacity:0,duration:.42,ease:'power3.inOut',overwrite:true});
+    const hideAward = () => gsap.to(award,{y:-30,scale:.72,rotate:5,opacity:0,duration:.44,ease:'power3.inOut',overwrite:true});
     const showAward = () => gsap.to(award,{y:0,scale:1,rotate:0,opacity:1,duration:.58,ease:'back.out(1.25)',overwrite:true});
-    ScrollTrigger.create({trigger:hero,start:'top+=110 top',end:'bottom top',onEnter:hideAward,onLeaveBack:showAward});
+    ScrollTrigger.create({trigger:hero,start:'top+=100 top',end:'bottom top',onEnter:hideAward,onLeaveBack:showAward});
   }
   if (hero && heroMedia) gsap.to(heroMedia,{yPercent:7,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'bottom top',scrub:true}});
 
+  /* Heritage is intentionally the only sticky changing-image chapter. */
   const heritageSteps = [...document.querySelectorAll('[data-heritage-step]')];
   const heritageFrames = [...document.querySelectorAll('[data-heritage-frame]')];
   const heritageCurrent = document.querySelector('#heritageProgress');
@@ -144,31 +150,53 @@
     activateHeritage(0);
     heritageSteps.forEach((step,index) => ScrollTrigger.create({trigger:step,start:'top 56%',end:'bottom 44%',onEnter:()=>activateHeritage(index),onEnterBack:()=>activateHeritage(index)}));
   }
+  document.querySelectorAll('[data-heritage-step] .year').forEach(year => gsap.from(year,{xPercent:-10,opacity:.18,ease:'none',scrollTrigger:{trigger:year,start:'top 82%',end:'center 54%',scrub:true}}));
 
-  document.querySelectorAll('[data-heritage-step] .year').forEach(year => gsap.from(year,{xPercent:-14,opacity:.18,ease:'none',scrollTrigger:{trigger:year,start:'top 82%',end:'center 54%',scrub:true}}));
-
+  /* Rooms: vertical wheel drives a lateral gallery from tablet/laptop upward. */
   const stayArea = document.querySelector('.stay-horizontal');
   const stayTrack = document.querySelector('.stay-horizontal-track');
   const stayProgress = document.querySelector('.stay-horizontal-progress');
-  if (stayArea && stayTrack && window.matchMedia('(min-width:1081px)').matches) {
+  if (stayArea && stayTrack && window.matchMedia('(min-width:761px)').matches) {
     const distance = () => Math.max(0, stayTrack.scrollWidth - stayArea.clientWidth);
-    gsap.to(stayTrack, {
+    const roomScroll = gsap.to(stayTrack, {
       x: () => -distance(),
       ease:'none',
-      scrollTrigger:{trigger:stayArea,start:'top 112px',end:() => `+=${Math.max(distance(), window.innerWidth * .9)}`,scrub:1,pin:true,anticipatePin:1,invalidateOnRefresh:true,onUpdate:self => stayProgress?.style.setProperty('--stay-progress', String(Math.max(.08,self.progress)))}
+      scrollTrigger:{
+        trigger:stayArea,
+        start:'top 126px',
+        end:() => `+=${Math.max(distance(), window.innerWidth * 1.1)}`,
+        scrub:.85,
+        pin:true,
+        anticipatePin:1,
+        invalidateOnRefresh:true,
+        onUpdate:self => stayProgress?.style.setProperty('--stay-progress', String(Math.max(.08,self.progress)))
+      }
     });
     document.querySelectorAll('.stay-card').forEach((card,i) => {
       const img = card.querySelector('img');
-      if (img) gsap.fromTo(img,{xPercent:i%2?3:-3,scale:1.06},{xPercent:i%2?-2:2,scale:1.01,ease:'none',scrollTrigger:{trigger:stayArea,start:'top 112px',end:() => `+=${Math.max(distance(), window.innerWidth*.9)}`,scrub:true}});
+      if (img) gsap.fromTo(img,{xPercent:i%2?4:-4,scale:1.065},{xPercent:i%2?-3:3,scale:1.01,ease:'none',scrollTrigger:{trigger:stayArea,start:'top 126px',end:() => `+=${Math.max(distance(), window.innerWidth*1.1)}`,scrub:true}});
     });
+    window.addEventListener('resize', () => roomScroll.scrollTrigger?.refresh(), {passive:true});
   }
 
+  /* Experiences: one editorial field; every tile has a different trajectory. */
+  const experienceScene = document.querySelector('.experience-scene');
   const experienceTiles = [...document.querySelectorAll('.experience-tile')];
+  const trajectories = [
+    {x:-36,y:90,rotate:-2.2},
+    {x:44,y:52,rotate:2.1},
+    {x:-18,y:120,rotate:1.3},
+    {x:46,y:94,rotate:-1.5},
+    {x:-42,y:64,rotate:2.4}
+  ];
   experienceTiles.forEach((tile,i) => {
-    gsap.from(tile,{y:i%2?92:64,x:i%3===0?-28:(i%3===2?28:0),rotate:i%2?1.5:-1.2,opacity:0,duration:.95,ease:'power4.out',scrollTrigger:{trigger:tile,start:'top 88%',once:true}});
+    const t = trajectories[i] || trajectories[0];
+    gsap.from(tile,{x:t.x,y:t.y,rotate:t.rotate,opacity:0,duration:1.05,ease:'power4.out',scrollTrigger:{trigger:experienceScene || tile,start:'top 76%',toggleActions:'play none none reverse'},delay:i*.06});
     const img=tile.querySelector('img');
-    if (img) gsap.fromTo(img,{yPercent:-7,scale:1.05},{yPercent:3,scale:1.015,ease:'none',scrollTrigger:{trigger:tile,start:'top bottom',end:'bottom top',scrub:true}});
+    if (img) gsap.fromTo(img,{yPercent:-8,scale:1.07},{yPercent:5,scale:1.015,ease:'none',scrollTrigger:{trigger:experienceScene || tile,start:'top bottom',end:'bottom top',scrub:true}});
   });
+  const centerMark = document.querySelector('.experience-center-mark');
+  if (centerMark && experienceScene) gsap.fromTo(centerMark,{scale:.86,opacity:.25},{scale:1.04,opacity:1,ease:'none',scrollTrigger:{trigger:experienceScene,start:'top 70%',end:'bottom 35%',scrub:true}});
 
   const thread = document.querySelector('.experience-thread');
   if (thread) {
@@ -196,7 +224,10 @@
     el.addEventListener('pointerleave',()=>{xTo(0);yTo(0);});
   });
 
-  document.querySelectorAll('.journey-card').forEach(card => {const img=card.querySelector('img');if(img)gsap.fromTo(img,{yPercent:-4},{yPercent:4,ease:'none',scrollTrigger:{trigger:card,start:'top bottom',end:'bottom top',scrub:true}});});
+  document.querySelectorAll('.journey-card').forEach(card => {
+    const img=card.querySelector('img');
+    if(img) gsap.fromTo(img,{yPercent:-4},{yPercent:4,ease:'none',scrollTrigger:{trigger:card,start:'top bottom',end:'bottom top',scrub:true}});
+  });
 
   ScrollTrigger.refresh();
 })();
