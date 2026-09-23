@@ -13,9 +13,9 @@
 
   /*
     ROOMS — one system only.
-    No GSAP pin, no drag, no sticky/ScrollTrigger collision.
-    A native sticky viewport stays visible while vertical scrolling maps directly
-    to the horizontal position of the four room cards.
+    No GSAP pin and no drag. Native sticky + direct scroll mapping.
+    The room viewport grows from an editorial frame to an almost edge-to-edge image
+    during the first part of the horizontal chapter.
   */
   const originalStay = document.querySelector('.stay-horizontal');
   if (originalStay && window.matchMedia('(min-width:761px)').matches) {
@@ -29,17 +29,17 @@
       ].filter(Boolean));
     }
 
-    /* Remove pointer listeners and any inline transforms left by older versions. */
     const stay = originalStay.cloneNode(true);
     originalStay.replaceWith(stay);
     stay.querySelector('.stay-drag-hint')?.remove();
 
     const track = stay.querySelector('.stay-horizontal-track');
     const progress = stay.querySelector('.stay-horizontal-progress');
-    if (track) {
+    const cards = [...stay.querySelectorAll('.stay-card')];
+    if (track && cards.length) {
       track.style.transform = 'translate3d(0,0,0)';
-      stay.style.transform = 'none';
       stay.style.opacity = '1';
+      stay.style.setProperty('--stay-scale', '.94');
 
       const shell = document.createElement('div');
       shell.className = 'stay-scroll-shell';
@@ -52,15 +52,22 @@
       let raf = 0;
 
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+      const smoothstep = n => n * n * (3 - 2 * n);
 
       const sync = () => {
         raf = 0;
         if (reduceMotion || horizontalDistance <= 0) {
           track.style.transform = 'translate3d(0,0,0)';
+          stay.style.setProperty('--stay-scale', '1');
           progress?.style.setProperty('--stay-progress', '.04');
           return;
         }
+
         const p = clamp((window.scrollY - startY) / verticalTravel, 0, 1);
+        const growP = smoothstep(clamp(p / .14, 0, 1));
+        const scale = .94 + (1.14 - .94) * growP;
+
+        stay.style.setProperty('--stay-scale', scale.toFixed(4));
         track.style.transform = `translate3d(${-horizontalDistance * p}px,0,0)`;
         progress?.style.setProperty('--stay-progress', String(Math.max(.04, p)));
       };
@@ -71,15 +78,18 @@
 
       const measure = () => {
         track.style.transform = 'translate3d(0,0,0)';
-        horizontalDistance = Math.max(0, track.scrollWidth - stay.clientWidth);
 
-        /* Keep the chapter concise: roughly 2.2–2.6 viewport heights for all 4 rooms. */
+        /* Every category fills the viewport: no dead strip beside the active room. */
+        const cardWidth = stay.clientWidth;
+        cards.forEach(card => { card.style.width = `${cardWidth}px`; });
+
+        horizontalDistance = Math.max(0, track.scrollWidth - stay.clientWidth);
         verticalTravel = Math.max(
           window.innerHeight * 2.25,
           Math.min(horizontalDistance, window.innerHeight * 2.65)
         );
 
-        const stickyTop = window.innerHeight * 0.16;
+        const stickyTop = window.innerHeight * 0.18;
         shell.style.height = `${Math.ceil(stay.offsetHeight + verticalTravel)}px`;
         const shellTop = shell.getBoundingClientRect().top + window.scrollY;
         startY = shellTop - stickyTop;
