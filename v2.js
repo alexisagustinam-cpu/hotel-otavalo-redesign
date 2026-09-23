@@ -16,7 +16,8 @@
     if (!collectionPanel.contains(event.target) && !collectionToggle?.contains(event.target)) setCollection(false);
   });
 
-  const slides = [...document.querySelectorAll('.hero-slide')];
+  /* hero-morph.js owns the homepage carousel when available. */
+  const slides = window.hotelHeroMorphManaged ? [] : [...document.querySelectorAll('.hero-slide')];
   const current = document.getElementById('heroSequenceCurrent');
   let active = 0;
   let timer;
@@ -58,7 +59,7 @@
   const start = () => {
     if (reduceMotion || slides.length < 2) return;
     clearInterval(timer);
-    timer = setInterval(() => show((active + 1) % slides.length), 5500);
+    timer = setInterval(() => show((active + 1) % slides.length), 6000);
   };
 
   if (slides.length) {
