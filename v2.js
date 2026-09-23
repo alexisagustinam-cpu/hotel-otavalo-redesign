@@ -20,23 +20,54 @@
   const current = document.getElementById('heroSequenceCurrent');
   let active = 0;
   let timer;
-  const show = index => {
+  let transitioning = false;
+
+  const readyImage = img => new Promise(resolve => {
+    if (!img) return resolve();
+    img.loading = 'eager';
+    img.decoding = 'async';
+    const finish = () => {
+      const decoded = img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+      Promise.resolve(decoded).finally(() => {
+        img.classList.remove('image-pending');
+        img.classList.add('image-ready');
+        resolve();
+      });
+    };
+    if (img.complete && img.naturalWidth > 0) return finish();
+    img.classList.add('image-pending');
+    img.addEventListener('load', finish, {once:true});
+    img.addEventListener('error', resolve, {once:true});
+  });
+
+  const show = async index => {
+    if (!slides.length || transitioning || index === active) return;
+    transitioning = true;
+    const target = slides[index];
+    const targetImg = target?.querySelector('img');
+    await readyImage(targetImg);
     slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index));
     active = index;
     if (current) current.textContent = String(index + 1).padStart(2, '0');
+    transitioning = false;
+
     const nextImg = slides[(index + 1) % slides.length]?.querySelector('img');
-    if (nextImg && !nextImg.dataset.preloaded) {
-      const preloader = new Image();
-      preloader.src = nextImg.src;
-      nextImg.dataset.preloaded = 'true';
-    }
+    if (nextImg) readyImage(nextImg);
   };
+
   const start = () => {
     if (reduceMotion || slides.length < 2) return;
     clearInterval(timer);
     timer = setInterval(() => show((active + 1) % slides.length), 5500);
   };
-  if (slides.length) { show(0); start(); }
+
+  if (slides.length) {
+    const first = slides[0].querySelector('img');
+    first?.classList.add('image-ready');
+    slides.slice(1).forEach(slide => readyImage(slide.querySelector('img')));
+    if (current) current.textContent = '01';
+    start();
+  }
   document.addEventListener('visibilitychange', () => document.hidden ? clearInterval(timer) : start());
 
   const setText = (selector, es, en, html=false) => {
