@@ -1,0 +1,41 @@
+/* Critical-image and motion refinements.
+   Keep imagery visually complete while preserving subtle editorial motion. */
+.hero-media img,
+.detail-hero-media img {
+  animation: none !important;
+  transform: none !important;
+  opacity: 1;
+}
+
+/* Media should never look like it is progressively revealing because of CSS. */
+.reveal-media {
+  clip-path: none !important;
+  opacity: .96;
+  transform: translateY(14px);
+  transition: transform .55s cubic-bezier(.23,1,.32,1), opacity .28s ease-out;
+}
+.reveal-media.visible {
+  clip-path: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+.reveal {
+  transition-duration: .62s !important;
+}
+
+/* Help browsers promote large hero imagery without keeping unnecessary layers alive. */
+.hero-media,
+.detail-hero-media {
+  background: #13272b;
+  contain: paint;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-media {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
